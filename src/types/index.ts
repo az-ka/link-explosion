@@ -11,11 +11,14 @@ export type TMetadata = {
 	contentLength: string | null;
 	server: string | null;
 	timestamp: string;
+	previewUrl: string | null;
+	previewType: string | null;
 };
 
 export type TError = {
 	message: string;
 	status: number;
+	details?: string;
 };
 
 export type TLinkState = {

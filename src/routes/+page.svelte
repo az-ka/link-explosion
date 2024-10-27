@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { TLinkHistory, TLinkState, TMetadata } from '../types';
+	import type { TLinkState } from '../types';
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import PreviewImage from '$lib/components/PreviewImage.svelte';
+	import * as Card from '$lib/components/ui/card';
 
 	const linkState = $state<TLinkState>({
 		originalUrl: '',
@@ -41,6 +42,12 @@
 				throw new Error(data.error || 'Terjadi kesalahan saat mengekspand URL');
 			}
 
+			if (data.security.isSafe) {
+				console.log('URL aman dengan skor:', data.security.score);
+			} else {
+				console.warn('URL mencurigakan! Risiko:', data.security.risks);
+			}
+
 			linkState.expandedUrl = data.expandedUrl;
 			linkState.metadata = data.metadata;
 
@@ -75,6 +82,41 @@
 		}
 	}
 
+	function deleteHistoryItem(index: number) {
+		linkState.history = linkState.history.filter((_, i) => i !== index);
+		localStorage.setItem('linkHistory', JSON.stringify(linkState.history));
+	}
+
+	function formatDate(timestamp: string | number | Date) {
+		const date = new Date(timestamp);
+		const now = new Date();
+
+		const isToday = date.toDateString() === now.toDateString();
+		const isYesterday =
+			date.toDateString() === new Date(now.setDate(now.getDate() - 1)).toDateString();
+		const timeOptions: Intl.DateTimeFormatOptions = {
+			hour: 'numeric',
+			minute: 'numeric',
+			hour12: true
+		};
+		const userLocale = navigator.language;
+		const timeString = date.toLocaleTimeString(userLocale, timeOptions);
+
+		if (isToday) {
+			return `Today at ${timeString}`;
+		} else if (isYesterday) {
+			return `Yesterday at ${timeString}`;
+		} else {
+			const dateOptions: Intl.DateTimeFormatOptions = {
+				year: 'numeric',
+				month: '2-digit',
+				day: '2-digit'
+			};
+			const dateString = date.toLocaleDateString(userLocale, dateOptions);
+			return `${dateString} ${timeString}`;
+		}
+	}
+
 	onMount(() => {
 		const savedHistory = localStorage.getItem('linkHistory');
 		if (savedHistory) {
@@ -86,15 +128,13 @@
 <div
 	class="min-h-screen bg-[#fcfcfd] flex flex-col justify-between items-center relative overflow-hidden sm:py-12"
 >
-	<h1 class="text-2xl font-bold">Exp</h1>
-
-	<div class="max-w-7xl mx-auto py-20">
+	<div class="max-w-2xl mx-auto py-20 w-full">
 		<div
 			class="relative px-7 py-6 bg-white ring-1 ring-gray-900/5 rounded-lg leading-none flex flex-col items-top justify-start space-x-6"
 		>
 			<h2 class="text-2xl font-bold text-center text-gray-800 md:text-3xl">Let's Go</h2>
 
-			<p class="mt-2 text-center text-gray-500 md:mt-4">
+			<p class="mt-2 text-center text-gray-500 md:mt-4 mb-6">
 				Enter a URL to expand it and get metadata information.
 			</p>
 
@@ -144,36 +184,45 @@
 
 		<div class="container px-4 py-20 mx-auto">
 			<div class="flex flex-col items-center text-center">
-				<h2
-					class="text-3xl font-bold text-transparent bg-gradient-to-r from-sky-500 via-blue-500 to-blue-600 bg-clip-text"
-				>
-					History
-				</h2>
+				<h2 class="text-3xl font-bold">History</h2>
 				<p class="mt-4 text-gray-500">You can see the last 10 URLs you've expanded here.</p>
 			</div>
 
 			{#if linkState.history.length > 0}
-				<div class="p-6 rounded-lg shadow-md">
-					<h2 class="text-xl font-semibold mb-4">Riwayat URL</h2>
-					<div class="space-y-4">
-						{#each linkState.history as item}
-							<div class="border-b pb-4">
-								<p class="text-sm text-gray-600">
-									{new Date(item.timestamp).toLocaleString()}
+				<div class="space-y-4">
+					{#each linkState.history as item, index}
+						<Card.Root class="bg-white">
+							<Card.Content>
+								<div class="flex flex-row items-start gap-x-4">
+									<img
+										src={item.metadata?.faviconUrl || '/favicon.ico'}
+										alt="Favicon"
+										class="size-14 rounded-full border border-gray-200 p-2"
+									/>
+									<div>
+										<h3 class="line-clamp-1 font-medium">{item.metadata.title}</h3>
+										<span class="line-clamp-1 text-gray-500">{formatDate(item.timestamp)}</span>
+									</div>
+								</div>
+
+								{#if item.metadata.description}
+								<p class="line-clamp-2 mt-4">
+									{item.metadata.description}
 								</p>
-								<p class="mb-1"><strong>Original:</strong> {item.originalUrl}</p>
-								<p class="mb-2"><strong>Expanded:</strong> {item.expandedUrl}</p>
+								{/if}
+
+								<p class="mb-1 mt-4"><strong>Original:</strong> <br> <a href="{item.originalUrl}" class="text-blue-500">{item.originalUrl}</a></p>
+								<p class="mb-6 break-words"><strong>Expanded:</strong> <br> <a href="{item.expandedUrl}" class="text-blue-500">{item.expandedUrl}</a></p>
 								{#if item.metadata.previewUrl}
-									<div class="max-w-md">
-										<PreviewImage
+									<PreviewImage
 											url={item.metadata.previewUrl}
 											alt={`Preview for ${item.originalUrl}`}
 										/>
-									</div>
 								{/if}
-							</div>
-						{/each}
-					</div>
+								<Button class="mt-2" on:click={() => deleteHistoryItem(index)}>Delete</Button>
+							</Card.Content>
+						</Card.Root>
+					{/each}
 				</div>
 			{/if}
 		</div>

@@ -16,7 +16,7 @@
 	<img
 		src={url}
 		{alt}
-		class="max-w-full h-auto rounded-lg shadow-md"
+		class="w-full rounded-lg mb-3"
 		on:error={(e) => {
 			const target = e.target as HTMLImageElement | null;
 			if (target) {

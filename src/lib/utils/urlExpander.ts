@@ -11,8 +11,7 @@ export async function expandUrl(url: string): Promise<TMetadata> {
 					'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 			},
 			signal: AbortSignal.timeout(10000)
-		}).catch(async (headError) => {
-			console.log('HEAD request failed, falling back to GET:', headError);
+		}).catch(async () => {
 			// Fallback ke GET request jika HEAD gagal
 			return await fetch(url, {
 				method: 'GET',

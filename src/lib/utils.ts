@@ -54,3 +54,33 @@ export const flyAndScale = (
 		easing: cubicOut
 	};
 };
+
+export function formatDate(timestamp: string | number | Date) {
+	const date = new Date(timestamp);
+	const now = new Date();
+
+	const isToday = date.toDateString() === now.toDateString();
+	const isYesterday =
+		date.toDateString() === new Date(now.setDate(now.getDate() - 1)).toDateString();
+	const timeOptions: Intl.DateTimeFormatOptions = {
+		hour: 'numeric',
+		minute: 'numeric',
+		hour12: true
+	};
+	const userLocale = navigator.language;
+	const timeString = date.toLocaleTimeString(userLocale, timeOptions);
+
+	if (isToday) {
+		return `Today at ${timeString}`;
+	} else if (isYesterday) {
+		return `Yesterday at ${timeString}`;
+	} else {
+		const dateOptions: Intl.DateTimeFormatOptions = {
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		};
+		const dateString = date.toLocaleDateString(userLocale, dateOptions);
+		return `${dateString} ${timeString}`;
+	}
+}

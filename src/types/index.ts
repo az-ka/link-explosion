@@ -2,6 +2,7 @@ export type TLinkHistory = {
 	originalUrl: string;
 	expandedUrl: string;
 	metadata: TMetadata;
+	security: TSecurityCheckResult;
 	timestamp: Date;
 };
 

@@ -7,8 +7,6 @@ export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { url } = await request.json();
 
-		console.log('Processing URL:', url);
-
 		// Validasi URL
 		try {
 			new URL(url);
@@ -35,8 +33,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			expandedUrl: metadata.finalUrl
 		});
 	} catch (error) {
-		console.error('Detailed error:', error);
-
 		return json(
 			{
 				success: false,

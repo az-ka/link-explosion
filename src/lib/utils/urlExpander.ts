@@ -2,7 +2,6 @@ import type { TMetadata } from '../../types';
 
 export async function expandUrl(url: string): Promise<TMetadata> {
 	try {
-		// Coba HEAD request dulu
 		const headResponse = await fetch(url, {
 			method: 'HEAD',
 			redirect: 'follow',
@@ -12,7 +11,6 @@ export async function expandUrl(url: string): Promise<TMetadata> {
 			},
 			signal: AbortSignal.timeout(10000)
 		}).catch(async () => {
-			// Fallback ke GET request jika HEAD gagal
 			return await fetch(url, {
 				method: 'GET',
 				redirect: 'follow',
@@ -35,12 +33,10 @@ export async function expandUrl(url: string): Promise<TMetadata> {
 		let title = null;
 		let description = null;
 
-		// Jika kontennya gambar, gunakan URL gambar sebagai preview
 		if (contentType?.startsWith('image/')) {
 			previewUrl = headResponse.url;
 			previewType = 'image';
 		} else {
-			// Jika bukan gambar, ambil metadata dari HTML
 			const fullResponse = await fetch(url, {
 				redirect: 'follow',
 				headers: {
@@ -52,14 +48,12 @@ export async function expandUrl(url: string): Promise<TMetadata> {
 
 			const html = await fullResponse.text();
 
-			// Ekstrak metadata dari HTML
 			const ogImageMatch = html.match(/]*property="og:image"[^>]*content="([^"]*)"[^>]*>/i);
 			const twitterImageMatch = html.match(/]*name="twitter:image"[^>]*content="([^"]*)"[^>]*>/i);
 			const faviconMatch = html.match(/]*rel="(?:shortcut )?icon"[^>]*href="([^"]*)"[^>]*>/i);
 			const titleMatch = html.match(/]*>([^<]*)<\/title>/i);
 			const descriptionMatch = html.match(/]*name="description"[^>]*content="([^"]*)"[^>]*>/i);
 
-			// Ambil preview image dari og:image atau twitter:image
 			if (ogImageMatch) {
 				previewUrl = new URL(ogImageMatch[1], url).href;
 				previewType = 'image';
@@ -68,12 +62,10 @@ export async function expandUrl(url: string): Promise<TMetadata> {
 				previewType = 'image';
 			}
 
-			// Ambil favicon jika ada
 			if (faviconMatch) {
 				faviconUrl = new URL(faviconMatch[1], url).href;
 			}
 
-			// Ambil title dan description
 			if (titleMatch) {
 				title = titleMatch[1].trim();
 			}
@@ -83,7 +75,6 @@ export async function expandUrl(url: string): Promise<TMetadata> {
 			}
 		}
 
-		// Kembalikan metadata lengkap
 		return {
 			contentType,
 			lastModified: headResponse.headers.get('last-modified'),

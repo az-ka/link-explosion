@@ -7,7 +7,6 @@ export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const { url } = await request.json();
 
-		// Validasi URL
 		try {
 			new URL(url);
 		} catch {
@@ -20,7 +19,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			);
 		}
 
-		// Jalankan kedua proses secara parallel untuk performa lebih baik
 		const [securityResult, metadata] = await Promise.all([
 			performSecurityCheck(url),
 			expandUrl(url)

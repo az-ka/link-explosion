@@ -20,7 +20,6 @@
 		on:error={(e) => {
 			const target = e.target as HTMLImageElement | null;
 			if (target) {
-				// Handle error loading image
 				target.style.display = 'none';
 			}
 		}}

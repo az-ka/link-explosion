@@ -66,7 +66,6 @@
 			linkState.expandedUrl = data.expandedUrl;
 			linkState.metadata = data.metadata;
 
-			// Update history
 			const newHistoryEntry = {
 				originalUrl: linkState.originalUrl,
 				expandedUrl: data.expandedUrl,
@@ -104,8 +103,8 @@
 
 	function handleImgError(event: Event): void {
 		const target = event.target as HTMLImageElement;
-		target.onerror = null; // Prevent infinite loop in case the fallback image also fails
-		target.src = 'https://hgk28y.csb.app/empty-product-image.svg'; // Fallback image URL
+		target.onerror = null; 
+		target.src = 'https://hgk28y.csb.app/empty-product-image.svg'; 
 	}
 
 	onMount(() => {
@@ -292,7 +291,6 @@
 
 	<footer class="w-full py-4 text-center text-gray-600">
 		<div class="flex items-center justify-center gap-2 mb-2">
-			<!-- Icon sesuai pilihan nama di atas -->
 			<Bomb size="20" />
 			<span class="font-medium"> Link Explosion </span>
 		</div>

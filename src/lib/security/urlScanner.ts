@@ -2,9 +2,8 @@ import type { TSecurityCheckResult } from '../../types';
 
 export async function performSecurityCheck(url: string): Promise<TSecurityCheckResult> {
 	const risks: string[] = [];
-	let score = 100; // Start with perfect score
+	let score = 100; 
 
-	// Initialize security details
 	const details = {
 		ssl: false,
 		age: null,
@@ -15,7 +14,6 @@ export async function performSecurityCheck(url: string): Promise<TSecurityCheckR
 		xssProtection: false
 	};
 
-	// Check SSL/HTTPS
 	details.ssl = url.toLowerCase().startsWith('https://');
 	if (!details.ssl) {
 		risks.push('No SSL/HTTPS encryption');
@@ -23,7 +21,6 @@ export async function performSecurityCheck(url: string): Promise<TSecurityCheckR
 	}
 
 	try {
-		// Fetch with timeout and proper headers
 		const response = await fetch(url, {
 			method: 'HEAD',
 			redirect: 'follow',
@@ -34,29 +31,25 @@ export async function performSecurityCheck(url: string): Promise<TSecurityCheckR
 			signal: AbortSignal.timeout(10000)
 		});
 
-		// Check security headers
 		const headers = response.headers;
 
-		// Content Security Policy
 		details.contentSecurityPolicy = headers.has('content-security-policy');
 		if (!details.contentSecurityPolicy) {
 			risks.push('Missing Content Security Policy');
 			score -= 10;
 		}
 
-		// XSS Protection
 		details.xssProtection = headers.has('x-xss-protection');
 		if (!details.xssProtection) {
 			risks.push('Missing XSS Protection');
 			score -= 10;
 		}
 
-		// Check for suspicious URL patterns
 		const suspiciousPatterns = [
-			/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/, // IP addresses
-			/[^a-zA-Z0-9-.]/, // Special characters
-			/(free|win|lucky|prize|money).{0,10}(offer|now|today|limited)/i, // Suspicious keywords
-			/\.(ru|cn|tk|ga|ml|cf|gq|top)$/ // Suspicious TLDs
+			/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/, 
+			/[^a-zA-Z0-9-.]/,
+			/(free|win|lucky|prize|money).{0,10}(offer|now|today|limited)/i, 
+			/\.(ru|cn|tk|ga|ml|cf|gq|top)$/ 
 		];
 
 		suspiciousPatterns.forEach((pattern) => {
@@ -67,7 +60,6 @@ export async function performSecurityCheck(url: string): Promise<TSecurityCheckR
 			}
 		});
 
-		// Check redirect count
 		if (response.redirected) {
 			details.redirectCount = countRedirects(response);
 			if (details.redirectCount > 2) {
@@ -76,7 +68,6 @@ export async function performSecurityCheck(url: string): Promise<TSecurityCheckR
 			}
 		}
 
-		// Malicious keywords check in HTML
 		if (response.headers.get('content-type')?.includes('text/html')) {
 			const text = await response.text();
 			const maliciousKeywords = [
@@ -111,7 +102,6 @@ export async function performSecurityCheck(url: string): Promise<TSecurityCheckR
 }
 
 function countRedirects(response: Response): number {
-	// Count redirects from response chain
 	let count = 0;
 	let currentUrl = response.url;
 	while (response.redirected && currentUrl !== response.url) {
